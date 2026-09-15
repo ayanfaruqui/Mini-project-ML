@@ -210,6 +210,68 @@ async function handleRecommend() {
     }
 }
 
+// ── Genre Gradient Map ─────────────────────────────────────
+const genreGradients = {
+    'Action':      { bg: 'linear-gradient(135deg, #dc2626 0%, #f97316 50%, #fbbf24 100%)', icon: '⚔️' },
+    'Adventure':   { bg: 'linear-gradient(135deg, #16a34a 0%, #22d3ee 100%)',               icon: '🗺️' },
+    'Animation':   { bg: 'linear-gradient(135deg, #f472b6 0%, #818cf8 50%, #38bdf8 100%)', icon: '✨' },
+    'Comedy':      { bg: 'linear-gradient(135deg, #facc15 0%, #fb923c 100%)',               icon: '😂' },
+    'Crime':       { bg: 'linear-gradient(135deg, #1e293b 0%, #475569 50%, #94a3b8 100%)', icon: '🔍' },
+    'Documentary': { bg: 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)',               icon: '📽️' },
+    'Drama':       { bg: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%)', icon: '🎭' },
+    'Family':      { bg: 'linear-gradient(135deg, #f472b6 0%, #fb923c 100%)',               icon: '👨‍👩‍👧' },
+    'Fantasy':     { bg: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)', icon: '🧙' },
+    'History':     { bg: 'linear-gradient(135deg, #92400e 0%, #b45309 50%, #d97706 100%)', icon: '📜' },
+    'Horror':      { bg: 'linear-gradient(135deg, #18181b 0%, #991b1b 50%, #450a0a 100%)', icon: '👻' },
+    'Music':       { bg: 'linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #fb7185 100%)', icon: '🎵' },
+    'Mystery':     { bg: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)', icon: '🔮' },
+    'Romance':     { bg: 'linear-gradient(135deg, #e11d48 0%, #f472b6 50%, #fda4af 100%)', icon: '💕' },
+    'ScienceFiction': { bg: 'linear-gradient(135deg, #0f172a 0%, #0ea5e9 50%, #22d3ee 100%)', icon: '🚀' },
+    'Thriller':    { bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #dc2626 100%)', icon: '🎯' },
+    'War':         { bg: 'linear-gradient(135deg, #1c1917 0%, #44403c 50%, #78716c 100%)', icon: '⚔️' },
+    'Western':     { bg: 'linear-gradient(135deg, #92400e 0%, #ca8a04 100%)',               icon: '🤠' },
+    'TVMovie':     { bg: 'linear-gradient(135deg, #4338ca 0%, #7c3aed 100%)',               icon: '📺' },
+    'default':     { bg: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%)', icon: '🎬' }
+};
+
+function getGenreStyle(genres) {
+    if (!genres || genres.length === 0) return genreGradients['default'];
+    const primary = genres[0];
+    return genreGradients[primary] || genreGradients['default'];
+}
+
+function buildPoster(movie, size = 'card') {
+    if (movie.poster) {
+        return `<img src="${movie.poster}" alt="${movie.title}" loading="lazy">`;
+    }
+
+    const style = getGenreStyle(movie.genres);
+    const initials = movie.title
+        .split(/[\s:]+/)
+        .filter(w => w.length > 0)
+        .slice(0, 3)
+        .map(w => w[0].toUpperCase())
+        .join('');
+
+    const isLarge = size === 'selected';
+    const titleSize = isLarge ? '1.1rem' : '0.85rem';
+    const iconSize = isLarge ? '2.8rem' : '2.2rem';
+    const initialsSize = isLarge ? '2.5rem' : '2rem';
+
+    return `
+        <div class="poster-generated" style="background: ${style.bg};">
+            <div class="poster-gen-overlay"></div>
+            <div class="poster-gen-content">
+                <span class="poster-gen-icon" style="font-size:${iconSize}">${style.icon}</span>
+                <span class="poster-gen-initials" style="font-size:${initialsSize}">${initials}</span>
+                <span class="poster-gen-title" style="font-size:${titleSize}">${movie.title}</span>
+                ${movie.year ? `<span class="poster-gen-year">${movie.year}</span>` : ''}
+            </div>
+            <div class="poster-gen-rating">⭐ ${movie.rating}</div>
+        </div>
+    `;
+}
+
 // ── Render Results ─────────────────────────────────────────
 function renderResults(data) {
     // Hide loading
@@ -220,10 +282,7 @@ function renderResults(data) {
     selectedMovieEl.innerHTML = `
         <div class="selected-card">
             <div class="selected-poster">
-                ${sel.poster
-                    ? `<img src="${sel.poster}" alt="${sel.title}" loading="lazy">`
-                    : `<div class="poster-placeholder">🎬</div>`
-                }
+                ${buildPoster(sel, 'selected')}
             </div>
             <div class="selected-info">
                 <span class="selected-label">Your Selection</span>
@@ -244,10 +303,7 @@ function renderResults(data) {
     recsGrid.innerHTML = data.recommendations.map((rec, i) => `
         <div class="movie-card" style="animation-delay: ${0.1 + i * 0.1}s">
             <div class="card-poster">
-                ${rec.poster
-                    ? `<img src="${rec.poster}" alt="${rec.title}" loading="lazy">`
-                    : `<div class="poster-placeholder">🎥</div>`
-                }
+                ${buildPoster(rec, 'card')}
                 <span class="card-rating">⭐ ${rec.rating}</span>
                 <span class="card-match">${Math.round(rec.score * 100)}% Match</span>
             </div>
