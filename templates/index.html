@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Powered Movie Recommendation System using Content-Based Filtering and Machine Learning. Get personalized movie suggestions instantly.">
+    <title>🎬 CineMatch — AI Movie Recommender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- ── Animated Background ── -->
+    <div class="bg-animation">
+        <div class="bg-gradient"></div>
+        <div class="bg-particles" id="particles"></div>
+    </div>
+
+    <!-- ── Navigation ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <span class="nav-icon">🎬</span>
+            <span class="nav-title">CineMatch</span>
+        </div>
+        <div class="nav-tagline">AI-Powered Movie Recommendations</div>
+    </nav>
+
+    <!-- ── Hero Section ── -->
+    <main class="container">
+        <section class="hero" id="hero">
+            <h1 class="hero-title">
+                <span class="hero-line">Discover Your</span>
+                <span class="hero-line gradient-text">Next Favorite Movie</span>
+            </h1>
+            <p class="hero-subtitle">
+                Powered by Machine Learning — search from 4,800+ movies and get personalized recommendations instantly.
+            </p>
+
+            <!-- Search Box -->
+            <div class="search-container" id="searchContainer">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Type a movie name... e.g. The Dark Knight"
+                        autocomplete="off"
+                    >
+                    <button class="search-btn" id="searchBtn" disabled>
+                        <span class="btn-text">Recommend</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </div>
+                <div class="autocomplete-dropdown" id="autocomplete"></div>
+            </div>
+
+            <!-- Quick Tags -->
+            <div class="quick-tags" id="quickTags">
+                <span class="tag-label">Try:</span>
+                <button class="quick-tag" data-movie="The Dark Knight">The Dark Knight</button>
+                <button class="quick-tag" data-movie="Inception">Inception</button>
+                <button class="quick-tag" data-movie="Avatar">Avatar</button>
+                <button class="quick-tag" data-movie="Titanic">Titanic</button>
+                <button class="quick-tag" data-movie="The Avengers">The Avengers</button>
+            </div>
+        </section>
+
+        <!-- ── Loading State ── -->
+        <section class="loading-section" id="loadingSection" style="display:none;">
+            <div class="loader">
+                <div class="loader-film">
+                    <div class="film-strip"></div>
+                    <div class="film-strip"></div>
+                    <div class="film-strip"></div>
+                </div>
+                <p class="loader-text">Analyzing movie features...</p>
+            </div>
+        </section>
+
+        <!-- ── Results Section ── -->
+        <section class="results-section" id="resultsSection" style="display:none;">
+            <!-- Selected Movie -->
+            <div class="selected-movie" id="selectedMovie"></div>
+
+            <!-- Recommendations -->
+            <div class="recs-header">
+                <h2 class="recs-title">
+                    <span class="recs-icon">✨</span>
+                    Movies You'll Love
+                </h2>
+                <p class="recs-subtitle">Based on content similarity & popularity</p>
+            </div>
+
+            <div class="recs-grid" id="recsGrid"></div>
+
+            <!-- Search Again -->
+            <div class="search-again">
+                <button class="search-again-btn" id="searchAgainBtn">
+                    ← Search Another Movie
+                </button>
+            </div>
+        </section>
+
+        <!-- ── How It Works ── -->
+        <section class="how-it-works" id="howItWorks">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon">📊</div>
+                    <h3>Data Processing</h3>
+                    <p>We analyze 4,800+ movies from TMDB — extracting genres, cast, directors, keywords, and plot summaries.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon">🧠</div>
+                    <h3>TF-IDF Vectorization</h3>
+                    <p>Movie features are converted into numerical vectors using Term Frequency-Inverse Document Frequency.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon">📐</div>
+                    <h3>Cosine Similarity</h3>
+                    <p>We compute similarity scores between all movie pairs to find the closest matches to your selection.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <div class="step-icon">⭐</div>
+                    <h3>Hybrid Ranking</h3>
+                    <p>Results are re-ranked using a popularity boost to surface high-quality, well-rated recommendations.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-text">
+                Built with ❤️ using <strong>Python · Flask · Scikit-learn</strong>
+            </p>
+            <p class="footer-credit">
+                🎬 CineMatch — Mini Project | Machine Learning
+            </p>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
