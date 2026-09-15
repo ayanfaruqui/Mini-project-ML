@@ -9,8 +9,6 @@ import os
 import ast
 import pickle
 import requests
-import zipfile
-import io
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -29,82 +27,62 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def download_dataset():
     """Download TMDB 5000 dataset from a public source."""
     movies_path = os.path.join(BASE_DIR, 'tmdb_5000_movies.csv')
-    credits_path = os.path.join(BASE_DIR, 'tmdb_5000_credits.csv')
 
-    if os.path.exists(movies_path) and os.path.exists(credits_path):
-        print("✅ Dataset files already exist.")
-        return movies_path, credits_path
+    if os.path.exists(movies_path):
+        print("[OK] Dataset file already exists.")
+        return movies_path
 
-    print("📥 Downloading TMDB 5000 dataset...")
+    print("[>>] Downloading TMDB 5000 dataset...")
 
-    # Try downloading from GitHub mirror
-    urls = {
-        'movies': 'https://raw.githubusercontent.com/utkarshx27/Movie-Recommender-System/main/tmdb_5000_movies.csv',
-        'credits': 'https://raw.githubusercontent.com/utkarshx27/Movie-Recommender-System/main/tmdb_5000_credits.csv'
-    }
+    # Try downloading from GitHub mirrors
+    urls = [
+        'https://raw.githubusercontent.com/vamshi121/TMDB-5000-Movie-Dataset/master/tmdb_5000_movies.csv',
+    ]
 
-    try:
-        for name, url in urls.items():
-            print(f"   Downloading {name}...")
+    for url in urls:
+        try:
+            print(f"   Trying: {url[:60]}...")
             response = requests.get(url, timeout=60)
             response.raise_for_status()
-            path = movies_path if name == 'movies' else credits_path
-            with open(path, 'wb') as f:
+            with open(movies_path, 'wb') as f:
                 f.write(response.content)
-        print("✅ Dataset downloaded successfully!")
-        return movies_path, credits_path
-    except Exception as e:
-        print(f"⚠️  Download failed: {e}")
-        print("📋 Please download the TMDB 5000 dataset manually from Kaggle:")
-        print("   https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata")
-        print(f"   Place 'tmdb_5000_movies.csv' and 'tmdb_5000_credits.csv' in: {BASE_DIR}")
-        raise SystemExit(1)
+            print("[OK] Dataset downloaded successfully!")
+            return movies_path
+        except Exception as e:
+            print(f"   Failed: {e}")
+            continue
+
+    print("[!!] Download failed.")
+    print("     Please download the TMDB 5000 dataset manually from Kaggle:")
+    print("     https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata")
+    print(f"     Place 'tmdb_5000_movies.csv' in: {BASE_DIR}")
+    raise SystemExit(1)
 
 
 def parse_json_column(text):
     """Safely parse JSON-like string columns from the dataset."""
     try:
         return [item['name'] for item in ast.literal_eval(text)]
-    except (ValueError, SyntaxError):
+    except (ValueError, SyntaxError, TypeError):
         return []
 
 
-def get_director(text):
-    """Extract director name from the crew column."""
-    try:
-        for member in ast.literal_eval(text):
-            if member.get('job') == 'Director':
-                return [member['name']]
-    except (ValueError, SyntaxError):
-        pass
-    return []
+def preprocess_data(movies_path):
+    """Load and preprocess the dataset."""
+    print("\n[..] Preprocessing data...")
 
-
-def get_top_cast(text, n=3):
-    """Extract top N cast members."""
-    try:
-        return [member['name'] for member in ast.literal_eval(text)[:n]]
-    except (ValueError, SyntaxError):
-        return []
-
-
-def preprocess_data(movies_path, credits_path):
-    """Load, merge, and preprocess the dataset."""
-    print("\n🔧 Preprocessing data...")
-
-    # Load datasets
+    # Load dataset
     movies = pd.read_csv(movies_path)
-    credits = pd.read_csv(credits_path)
 
-    # Merge on title
-    movies = movies.merge(credits, on='title')
+    # Rename 'id' to 'movie_id' for consistency
+    movies = movies.rename(columns={'id': 'movie_id'})
 
     # Select relevant columns
     movies = movies[[
         'movie_id', 'title', 'overview', 'genres', 'keywords',
-        'cast', 'crew', 'vote_average', 'vote_count',
+        'production_companies', 'vote_average', 'vote_count',
         'popularity', 'release_date'
-    ]]
+    ]].copy()
 
     # Drop rows with missing overview
     movies.dropna(subset=['overview'], inplace=True)
@@ -112,22 +90,22 @@ def preprocess_data(movies_path, credits_path):
     # Parse JSON columns
     movies['genres'] = movies['genres'].apply(parse_json_column)
     movies['keywords'] = movies['keywords'].apply(parse_json_column)
-    movies['cast'] = movies['cast'].apply(lambda x: get_top_cast(x, 3))
-    movies['director'] = movies['crew'].apply(get_director)
+    movies['production_companies'] = movies['production_companies'].apply(
+        lambda x: parse_json_column(x)[:3]  # Top 3 production companies
+    )
 
-    # Remove spaces from multi-word names (so "Tom Hanks" -> "TomHanks")
-    for col in ['genres', 'keywords', 'cast', 'director']:
+    # Remove spaces from multi-word names (so "Science Fiction" -> "ScienceFiction")
+    for col in ['genres', 'keywords', 'production_companies']:
         movies[col] = movies[col].apply(
             lambda lst: [item.replace(' ', '') for item in lst]
         )
 
     # Create tags column by combining all text features
     movies['tags'] = (
-        movies['overview'].apply(lambda x: x.split()) +
-        movies['genres'] +
+        movies['overview'].apply(lambda x: str(x).split()) +
+        movies['genres'] * 2 +          # Boost genre weight
         movies['keywords'] +
-        movies['cast'] +
-        movies['director']
+        movies['production_companies']
     )
     movies['tags'] = movies['tags'].apply(lambda x: ' '.join(x).lower())
 
@@ -141,8 +119,11 @@ def preprocess_data(movies_path, credits_path):
         movies['release_date'], errors='coerce'
     ).dt.year.fillna(0).astype(int)
 
-    # Reset genres back to readable format for display
-    movies['genre_list'] = movies['genres'].apply(lambda x: x)
+    # Store genres for display
+    movies['genre_list'] = movies['genres']
+
+    # Reset index
+    movies = movies.reset_index(drop=True)
 
     print(f"   Processed {len(movies)} movies.")
     return movies
@@ -150,7 +131,7 @@ def preprocess_data(movies_path, credits_path):
 
 def build_model(movies):
     """Build TF-IDF vectors and cosine similarity matrix."""
-    print("\n🧠 Building recommendation model...")
+    print("\n[..] Building recommendation model...")
 
     # Stemming
     ps = PorterStemmer()
@@ -172,7 +153,7 @@ def build_model(movies):
 
 def save_model(movies, similarity):
     """Save model artifacts as pickle files."""
-    print("\n💾 Saving model artifacts...")
+    print("\n[..] Saving model artifacts...")
 
     # Prepare movie data for serialization
     movie_data = movies[[
@@ -187,16 +168,18 @@ def save_model(movies, similarity):
 
     with open(movie_dict_path, 'wb') as f:
         pickle.dump(movie_data, f)
-    print(f"   ✅ Saved movie_dict.pkl ({os.path.getsize(movie_dict_path) / 1e6:.1f} MB)")
+    size1 = os.path.getsize(movie_dict_path) / 1e6
+    print(f"   [OK] Saved movie_dict.pkl ({size1:.1f} MB)")
 
     with open(similarity_path, 'wb') as f:
         pickle.dump(similarity, f)
-    print(f"   ✅ Saved similarity.pkl ({os.path.getsize(similarity_path) / 1e6:.1f} MB)")
+    size2 = os.path.getsize(similarity_path) / 1e6
+    print(f"   [OK] Saved similarity.pkl ({size2:.1f} MB)")
 
 
 def test_recommendations(movies, similarity):
     """Quick test to verify the model works."""
-    print("\n🧪 Testing recommendations...")
+    print("\n[..] Testing recommendations...")
 
     test_movies = ['The Dark Knight', 'Avatar', 'Titanic']
     for test_movie in test_movies:
@@ -211,7 +194,7 @@ def test_recommendations(movies, similarity):
         )[1:6]
 
         recs = [movies.iloc[i[0]]['title'] for i in distances]
-        print(f"\n   🎬 If you liked '{test_movie}':")
+        print(f"\n   If you liked '{test_movie}':")
         for i, rec in enumerate(recs, 1):
             print(f"      {i}. {rec}")
 
@@ -219,14 +202,14 @@ def test_recommendations(movies, similarity):
 def main():
     """Main training pipeline."""
     print("=" * 60)
-    print("🎬 Movie Recommendation System - Training Pipeline")
+    print("  Movie Recommendation System - Training Pipeline")
     print("=" * 60)
 
     # Step 1: Download dataset
-    movies_path, credits_path = download_dataset()
+    movies_path = download_dataset()
 
     # Step 2: Preprocess data
-    movies = preprocess_data(movies_path, credits_path)
+    movies = preprocess_data(movies_path)
 
     # Step 3: Build model
     similarity = build_model(movies)
@@ -238,8 +221,8 @@ def main():
     save_model(movies, similarity)
 
     print("\n" + "=" * 60)
-    print("✅ Training complete! Model saved successfully.")
-    print("   Run 'python app.py' to start the web server.")
+    print("  [OK] Training complete! Model saved successfully.")
+    print("  Run 'python app.py' to start the web server.")
     print("=" * 60)
 
 
