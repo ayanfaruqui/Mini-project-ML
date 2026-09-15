@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Report - Movie Recommendation System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @page {
+            size: A4;
+            margin: 2cm 2.2cm;
+        }
+
+        body {
+            font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+            font-size: 11.5pt;
+            line-height: 1.65;
+            color: #1a1a2e;
+            background: #fff;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 2cm 2.2cm;
+        }
+
+        /* ── Header / Title Block ──────────────────────────── */
+        .report-header {
+            text-align: center;
+            border-bottom: 3px double #1a1a2e;
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+        }
+
+        .report-header .institution {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .report-header h1 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 20pt;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 10px 0 8px;
+        }
+
+        .report-header .subtitle {
+            font-size: 12pt;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .report-header .author-info {
+            font-size: 10.5pt;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        /* ── Section Headings ──────────────────────────────── */
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 13pt;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            border-bottom: 1.5px solid #ddd;
+            padding-bottom: 3px;
+        }
+
+        h3 {
+            font-size: 11.5pt;
+            font-weight: 700;
+            color: #333;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+
+        /* ── Body Text ─────────────────────────────────────── */
+        p {
+            text-align: justify;
+            margin-bottom: 8px;
+        }
+
+        strong { color: #1a1a2e; }
+
+        /* ── Lists ─────────────────────────────────────────── */
+        ul, ol {
+            margin-left: 22px;
+            margin-bottom: 8px;
+        }
+
+        li { margin-bottom: 3px; }
+
+        /* ── Table ─────────────────────────────────────────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10.5pt;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        table th {
+            background: #f0f0f5;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        table tr:nth-child(even) { background: #fafafa; }
+
+        /* ── Architecture Diagram (ASCII) ──────────────────── */
+        .diagram {
+            background: #f7f7fb;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 14px 18px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            margin: 10px 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* ── Formula ───────────────────────────────────────── */
+        .formula {
+            background: #f7f7fb;
+            border-left: 3px solid #7c3aed;
+            padding: 8px 14px;
+            margin: 8px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 10.5pt;
+            color: #333;
+        }
+
+        /* ── Page Break ────────────────────────────────────── */
+        .page-break {
+            page-break-before: always;
+            margin-top: 0;
+        }
+
+        /* ── Footer ────────────────────────────────────────── */
+        .report-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 9.5pt;
+            color: #888;
+            text-align: center;
+        }
+
+        /* ── Print Styles ──────────────────────────────────── */
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+        }
+
+        /* ── Print Button ──────────────────────────────────── */
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 24px;
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+            z-index: 100;
+        }
+        .print-btn:hover { background: #6d28d9; }
+    </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+
+<!-- ════════════════════ PAGE 1 ════════════════════ -->
+
+<div class="report-header">
+    <p class="institution">Mini Project Report — Machine Learning</p>
+    <h1>Movie Recommendation System</h1>
+    <p class="subtitle">Content-Based Filtering using TF-IDF & Cosine Similarity</p>
+    <p class="author-info">
+        <strong>Submitted by:</strong> Ayan Faruqui<br>
+        <strong>Date:</strong> September 2026<br>
+        <strong>GitHub:</strong> github.com/ayanfaruqui/Mini-project-ML
+    </p>
+</div>
+
+<h2>1. Introduction</h2>
+<p>
+    With the explosive growth of online streaming platforms, users are overwhelmed by a vast library of movies, making it difficult to find content matching their preferences. A <strong>Movie Recommendation System</strong> addresses this challenge by analyzing movie attributes and suggesting similar content based on a user's selection. This project implements a <strong>Hybrid Content-Based + Popularity Recommender</strong> that leverages Natural Language Processing (NLP) and Machine Learning to deliver accurate, real-time movie recommendations through an interactive web interface.
+</p>
+
+<h2>2. Problem Statement</h2>
+<p>
+    To build an end-to-end machine learning system that recommends the top 5 most similar movies to a user-selected movie, based on metadata features such as genres, keywords, overview, and production companies, deployed as a web application with a visually engaging user interface.
+</p>
+
+<h2>3. Dataset</h2>
+<p>
+    The project uses the <strong>TMDB 5000 Movie Dataset</strong> sourced from Kaggle, which contains metadata for 4,803 movies including:
+</p>
+<table>
+    <tr><th>Feature</th><th>Description</th><th>Type</th></tr>
+    <tr><td>title</td><td>Movie name</td><td>String</td></tr>
+    <tr><td>overview</td><td>Plot summary</td><td>Text</td></tr>
+    <tr><td>genres</td><td>List of genres (JSON)</td><td>Categorical</td></tr>
+    <tr><td>keywords</td><td>Thematic tags (JSON)</td><td>Categorical</td></tr>
+    <tr><td>production_companies</td><td>Studios involved</td><td>Categorical</td></tr>
+    <tr><td>vote_average / vote_count</td><td>User ratings</td><td>Numerical</td></tr>
+    <tr><td>popularity</td><td>Popularity score</td><td>Numerical</td></tr>
+</table>
+
+<h2>4. Methodology</h2>
+
+<h3>4.1 Data Preprocessing</h3>
+<p>
+    JSON-encoded columns (<em>genres, keywords, production_companies</em>) are parsed and flattened. Multi-word terms are concatenated (e.g., "Science Fiction" → "ScienceFiction") to preserve meaning during tokenization. A unified <strong>tags</strong> column is created by concatenating: <em>overview tokens + genres (×2 weight) + keywords + production companies</em>. Text is lowercased and stemmed using the <strong>Porter Stemmer</strong> from NLTK.
+</p>
+
+<h3>4.2 Feature Extraction — TF-IDF Vectorization</h3>
+<p>
+    The <strong>Term Frequency–Inverse Document Frequency (TF-IDF)</strong> technique converts each movie's tag string into a numerical vector. A vocabulary of 5,000 features is used with English stop-word removal:
+</p>
+<div class="formula">
+    TF-IDF(t, d) = TF(t, d) × log(N / DF(t))
+    <br>where TF = term frequency in document d, DF = document frequency, N = total documents
+</div>
+<p>This produces a sparse matrix of shape <strong>(4800 × 5000)</strong>.</p>
+
+<h3>4.3 Similarity Computation — Cosine Similarity</h3>
+<p>
+    Pairwise similarity between all movie vectors is computed using <strong>Cosine Similarity</strong>, producing a (4800 × 4800) similarity matrix:
+</p>
+<div class="formula">
+    cos(A, B) = (A · B) / (||A|| × ||B||)     ∈ [0, 1]
+</div>
+<p>A score of 1.0 indicates identical content profiles, while 0.0 indicates no similarity.</p>
+
+<h3>4.4 Hybrid Scoring</h3>
+<p>
+    Pure content similarity is blended with a popularity component to avoid recommending obscure films:
+</p>
+<div class="formula">
+    Hybrid Score = 0.8 × Cosine Similarity + 0.2 × Normalized Popularity
+    <br>where Popularity = vote_average × log(1 + vote_count)
+</div>
+
+<!-- ════════════════════ PAGE 2 ════════════════════ -->
+
+<h2 class="page-break">5. System Architecture</h2>
+<div class="diagram">
+┌──────────────┐    ┌───────────────────────┐    ┌───────────────────┐
+│  TMDB 5000   │───▶│  train_model.py       │───▶│  Model Artifacts  │
+│  Dataset     │    │  • Preprocessing      │    │  • movie_dict.pkl │
+│  (CSV)       │    │  • TF-IDF + Stemming  │    │  • similarity.pkl │
+└──────────────┘    │  • Cosine Similarity  │    └────────┬──────────┘
+                    └───────────────────────┘             │
+                                                         ▼
+┌──────────────┐    ┌───────────────────────┐    ┌───────────────────┐
+│   Browser    │◀──▶│  Flask App (app.py)   │◀───│  Pickle Loader    │
+│  (Frontend)  │    │  • REST API           │    │  • Movie Data     │
+│  HTML/CSS/JS │    │  • Recommendation     │    │  • Sim Matrix     │
+└──────────────┘    │  • Autocomplete       │    └───────────────────┘
+                    └───────────────────────┘</div>
+
+<h2>6. Technology Stack</h2>
+<table>
+    <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+    <tr><td>ML / NLP</td><td>Scikit-learn, NLTK, Pandas, NumPy</td><td>TF-IDF, Cosine Similarity, Stemming</td></tr>
+    <tr><td>Backend</td><td>Python, Flask</td><td>REST API, Model Serving</td></tr>
+    <tr><td>Frontend</td><td>HTML5, CSS3, JavaScript</td><td>Search UI, Autocomplete, Results Display</td></tr>
+    <tr><td>Serialization</td><td>Pickle</td><td>Model persistence (.pkl files)</td></tr>
+    <tr><td>Version Control</td><td>Git, GitHub</td><td>Source code management</td></tr>
+</table>
+
+<h2>7. Key Features</h2>
+<ul>
+    <li><strong>Real-time Autocomplete:</strong> Fuzzy search across 4,800 movie titles with keyboard navigation.</li>
+    <li><strong>Hybrid Recommendations:</strong> Combines content similarity (80%) with popularity (20%) for balanced results.</li>
+    <li><strong>Genre-Based Visual Posters:</strong> Dynamic gradient poster cards colored by genre (Action=Red, Sci-Fi=Blue, etc.).</li>
+    <li><strong>Match Percentage:</strong> Each recommendation displays a similarity confidence score.</li>
+    <li><strong>Responsive Design:</strong> Glassmorphic dark theme, works on mobile and desktop.</li>
+    <li><strong>Quick Tags:</strong> Pre-defined genre buttons for instant recommendations.</li>
+</ul>
+
+<h2>8. Results & Evaluation</h2>
+<p>The model was tested with popular movies. Sample results demonstrate high-quality, contextually relevant recommendations:</p>
+<table>
+    <tr><th>Input Movie</th><th>Top 3 Recommendations</th><th>Match %</th></tr>
+    <tr><td>The Dark Knight</td><td>The Dark Knight Rises, Batman Begins, Batman Returns</td><td>57%, 50%, 46%</td></tr>
+    <tr><td>Avatar</td><td>Aliens, Jupiter Ascending, Meet Dave</td><td>45%, 38%, 35%</td></tr>
+    <tr><td>Titanic</td><td>Ghost Ship, Poseidon, The Rose</td><td>42%, 37%, 34%</td></tr>
+</table>
+<p>
+    The recommendations show strong genre and thematic coherence — Batman films are correctly grouped, sci-fi/adventure films cluster together, and drama/romance films appear in relevant groupings. The hybrid scoring ensures popular, well-rated films are ranked higher.
+</p>
+
+<h2>9. Conclusion & Future Scope</h2>
+<p>
+    This project successfully demonstrates an end-to-end ML pipeline: from data preprocessing and feature engineering to model deployment via a web application. The TF-IDF + Cosine Similarity approach provides interpretable, fast recommendations without requiring user interaction history (cold-start friendly).
+</p>
+<p><strong>Future Improvements:</strong></p>
+<ul>
+    <li>Integrate <strong>Collaborative Filtering</strong> using user ratings for personalized recommendations.</li>
+    <li>Add <strong>TMDB API integration</strong> for real movie poster images.</li>
+    <li>Deploy on <strong>cloud platforms</strong> (Heroku / AWS / Render) for public access.</li>
+    <li>Incorporate <strong>deep learning embeddings</strong> (Word2Vec / BERT) for semantic understanding.</li>
+</ul>
+
+<h2>10. References</h2>
+<ol>
+    <li>TMDB 5000 Movie Dataset — <em>Kaggle</em> (kaggle.com/datasets/tmdb/tmdb-movie-metadata)</li>
+    <li>Scikit-learn TfidfVectorizer Documentation — <em>scikit-learn.org</em></li>
+    <li>Ricci, F., Rokach, L., & Shapira, B. (2015). <em>Recommender Systems Handbook</em>, Springer.</li>
+    <li>Lops, P., de Gemmis, M., & Semeraro, G. (2011). Content-based Recommender Systems. <em>Recommender Systems Handbook</em>, pp. 73–105.</li>
+    <li>Porter, M.F. (1980). An Algorithm for Suffix Stripping. <em>Program</em>, 14(3), pp. 130–137.</li>
+</ol>
+
+<div class="report-footer">
+    Mini Project Report — Movie Recommendation System | Ayan Faruqui | September 2026
+</div>
+
+</body>
+</html>
