@@ -4,3 +4,4 @@ numpy==2.2.6
 scikit-learn==1.6.1
 nltk==3.9.1
 requests==2.32.3
+gunicorn==23.0.0
